@@ -1,0 +1,29 @@
+# In a template file, you use the parameters section instead of variables to define inputs
+# In a template file, you use ${{}} syntax instead of $() to read a parameter's value. When you read a parameter's value, you include the parameters section in its name. For example ${{parameters.buildConfiguration}}
+parameters:
+  buildConfiguration: 'Release'
+
+steps:
+# Build Task 
+- task: DotNetCoreCLI@2
+  # Use the variable buildConfiguration
+  displayName: 'Build the project - $(buildConfiguration)'
+  inputs:
+    command: 'build'
+    # Use the variable buildConfiguration
+    arguments: '--no-restore --configuration $(buildConfiguration)'
+    projects: '**/*.csproj'
+
+# Publish Task 
+# To publish or package the application's build results (including it dependencies into a folder)
+- task: DotNetCoreCLI@2
+  # Use the variable
+  displayName: 'Publish the project - $(buildConfiguration)'
+  inputs:
+    command: 'publish'
+    projects: '**/*.csproj'
+    publishWebProjects: false
+    # Use the variable buildConfiguration
+    arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
+    # This argument specifies to add the build results to a .zip file
+    zipAfterPublish: true
