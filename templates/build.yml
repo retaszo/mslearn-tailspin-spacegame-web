@@ -7,23 +7,23 @@ steps:
 # Build Task 
 - task: DotNetCoreCLI@2
   # Use the variable buildConfiguration
-  displayName: 'Build the project - $(buildConfiguration)'
+  displayName: 'Build the project - ${{ parameters.buildConfiguration }}'
   inputs:
     command: 'build'
     # Use the variable buildConfiguration
-    arguments: '--no-restore --configuration $(buildConfiguration)'
+    arguments: '--no-restore --configuration ${{ parameters.buildConfiguration }}'
     projects: '**/*.csproj'
 
 # Publish Task 
 # To publish or package the application's build results (including it dependencies into a folder)
 - task: DotNetCoreCLI@2
   # Use the variable
-  displayName: 'Publish the project - $(buildConfiguration)'
+  displayName: 'Publish the project - ${{ parameters.buildConfiguration }}'
   inputs:
     command: 'publish'
     projects: '**/*.csproj'
     publishWebProjects: false
     # Use the variable buildConfiguration
-    arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
+    arguments: '--no-build --configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory)/${{ parameters.buildConfiguration }}'
     # This argument specifies to add the build results to a .zip file
     zipAfterPublish: true
