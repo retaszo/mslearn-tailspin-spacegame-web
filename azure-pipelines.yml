@@ -40,6 +40,7 @@ steps:
     arguments: '--no-restore --configuration Release'
     projects: '**/*.csproj'
 
+# To publish or package the application's build results (including it dependencies into a folder)
 - task: DotNetCoreCLI@2
   displayName: 'Publish the project - Release'
   inputs:
@@ -47,8 +48,11 @@ steps:
     projects: '**/*.csproj'
     publishWebProjects: false
     arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+    # This argument specifies to add the build results to a .zip file
     zipAfterPublish: true
 
+# To publish the .zip file to Azure Pipelines
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: drop'
+  # This arcument specifies to run the task only when the previous task succeeds
   condition: succeeded()
