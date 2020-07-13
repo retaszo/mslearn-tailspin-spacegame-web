@@ -6,18 +6,30 @@ pool:
   demands:
     - npm
 
+# Added these variables
+variables:
+  # Specifies the build configuration
+  buildConfiguration: 'Release'
+  # Specifies the path to the wwwroot directory
+  wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
+  # Specifies the .NET Core SDK version to use
+  dotnetSdkVersion: '3.1.300'
+
 steps:
 - task: UseDotNet@2
-  displayName: 'Use .NET Core SDK 3.1.300'
+  # Use the variable dotnetSdkVersion
+  displayName: 'Use .NET Core SDK $(dotnetSdkVersion)'
   inputs:
-    version: 3.1.300
+    # Use the variable dotnetSdkVersion
+    version: '$(dotnetSdkVersion)'
 
 - task: Npm@1
   displayName: 'Run npm install'
   inputs:
     verbose: false
 
-- script: './node_modules/.bin/node-sass Tailspin.SpaceGame.Web/wwwroot --output Tailspin.SpaceGame.Web/wwwroot'
+# Use the variable wwwrootDir
+- script: './node_modules/.bin/node-sass $(wwwrootDir) --output $(wwwrootDir)'
   displayName: 'Compile Sass assets'
 
 - task: gulp@1
@@ -25,7 +37,8 @@ steps:
 
 - script: 'echo "$(Build.DefinitionName), $(Build.BuildId), $(Build.BuildNumber)" > buildinfo.txt'
   displayName: 'Write build info'
-  workingDirectory: Tailspin.SpaceGame.Web/wwwroot
+  # Use the variable wwwrootDir
+  workingDirectory: $(wwwrootDir)
 
 - task: DotNetCoreCLI@2
   displayName: 'Restore project dependencies'
@@ -34,20 +47,24 @@ steps:
     projects: '**/*.csproj'
 
 - task: DotNetCoreCLI@2
-  displayName: 'Build the project - Release'
+  # Use the variable buildConfiguration
+  displayName: 'Build the project - $(buildConfiguration)'
   inputs:
     command: 'build'
-    arguments: '--no-restore --configuration Release'
+    # Use the variable buildConfiguration
+    arguments: '--no-restore --configuration $(buildConfiguration)'
     projects: '**/*.csproj'
 
 # To publish or package the application's build results (including it dependencies into a folder)
 - task: DotNetCoreCLI@2
-  displayName: 'Publish the project - Release'
+  # Use the variable
+  displayName: 'Publish the project - $(buildConfiguration)'
   inputs:
     command: 'publish'
     projects: '**/*.csproj'
     publishWebProjects: false
-    arguments: '--no-build --configuration Release --output $(Build.ArtifactStagingDirectory)/Release'
+    # Use the variable buildConfiguration
+    arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
     # This argument specifies to add the build results to a .zip file
     zipAfterPublish: true
 
