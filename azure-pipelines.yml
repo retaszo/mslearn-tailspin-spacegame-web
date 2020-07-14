@@ -45,19 +45,38 @@ steps:
     arguments: '--no-restore --configuration $(buildConfiguration)'
     projects: '**/*.csproj'
 
-# This introduces the DotNetCoreCLI@2
-# This runs the dotnet test command
+# This builds upon your existin configuration
+# For NetCoreCLI@2 Install .NET Core Tools from local manifest. It installs tools listed in the manifest file, dotnet-tools.json
+- task: DotNetCoreCLI@2
+  displayName: 'Install .NET Core tools from local manifest'
+  inputs:
+    command: custom
+    custom: tool
+    arguments: 'restore'
+
+# Runs unit tests - $(buildConfiguration). Runs unit tests and also collects code coverage in Cobertura format
 - task: DotNetCoreCLI@2
   displayName: 'Run unit tests - $(buildConfiguration)'
   inputs:
     command: 'test'
-    arguments: '--no-build --configuration $(buildConfiguration)'
-    # It does not need the --logger trx argument because publishTestResults argument adds that for you
-    # This tells the pipeline to generate the TRX file to a temporary directory, accessible through the $(Agent.TempDirectory) built-in variable
-    # This also publishes the task results to the pipeline
+    arguments: '--no-build --configuration $(buildConfiguration) /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=$(Build.SourcesDirectory)/TestResults/Coverage/'
     publishTestResults: true
-    # Specifies all C# projectst that match **/*.Test.csproj - "**" matches all directories; "*.Test.csproj" matches all projects whose file name ends with ".Test.csproj"
     projects: '**/*.Tests.csproj'
+
+# Create code coverage report. Converts Cobertura output to HTML
+- task: DotNetCoreCLI@2
+  displayName: 'Create code coverage report'
+  inputs:
+    command: custom
+    custom: tool
+    arguments: 'run reportgenerator -reports:$(Build.SourcesDirectory)/**/coverage.cobertura.xml -targetdir:$(Build.SourcesDirectory)/CodeCoverage -reporttypes:HtmlInline_AzurePipelines'
+
+# Publish Code Coverate report. Publishes the report to the pipeline
+- task: PublishCodeCoverageResults@1
+  displayName: 'Publish code coverage report'
+  inputs:
+    codeCoverageTool: 'cobertura'
+    summaryFileLocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'
 
 - task: DotNetCoreCLI@2
   displayName: 'Publish the project - $(buildConfiguration)'
