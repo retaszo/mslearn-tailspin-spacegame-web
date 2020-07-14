@@ -54,6 +54,10 @@ steps:
     arguments: '--no-build --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/$(buildConfiguration)'
     zipAfterPublish: true
 
+# The WhiteSource Bolt@20 task, which runs before the PublishBuildArtifacts@1 task, is highlighted. It analyzes your open-source dependencies for known vulnerabilities, as well as licenses and prepares reports that you can review directly from Azure Pipelines.
+- task: WhiteSource Bolt@20
+  displayName: 'Run WhiteSource Bolt'
+
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: drop'
   condition: succeeded()
